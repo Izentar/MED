@@ -32,7 +32,7 @@ public:
         std::stringstream getReport(){
             std::stringstream ss;
             ss << "Reported memory usage:\nTime\tMemory (KB)\n-----------------------------------------\n";
-            for(auto i = 0; i < reportedMemUsage_.size(); ++i){
+            for(std::size_t i = 0; i < reportedMemUsage_.size(); ++i){
                 
                 ss << timeToHuman(reportedTime_[i]) << "\t" << reportedMemUsage_[i] << '\n';
             }
@@ -46,7 +46,7 @@ public:
         std::vector<std::string> note_;
 
     public:
-        void snapshot(std::string note){
+        void snapshot(const std::string& note){
             note_.push_back(note);
             reportedTime_.push_back(std::chrono::system_clock::now());
         }
@@ -54,7 +54,7 @@ public:
         std::stringstream getReport(){
             std::stringstream ss;
             ss << "Reported time:\nTime\tNote\n-----------------------------------------\n";
-            for(auto i = 0; i < reportedTime_.size(); ++i){
+            for(size_t i = 0; i < reportedTime_.size(); ++i){
                 
                 ss << timeToHuman(reportedTime_[i]) << "\t" << note_[i] << '\n';
             }
