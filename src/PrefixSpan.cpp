@@ -2,21 +2,48 @@
 
 namespace PrefixSpan{
 
+bool Data::load(const std::string& filename){
+    if(data_.size() != 0){
+        return false;
+    }
+    std::ifstream input(filename);
+    std::string line;
+    TransactionIndexType id = 0;
+
+    while(getline(input, line)){
+        std::stringstream ll(line);
+        IndexType number;
+        TransactionData transData;
+        while(ll >> number){
+            transData.push_back(number);
+        }
+        data_.push_back(Transaction(id, std::move(transData)));
+        
+        ++id;
+    }
+    return true;
+}
+
+PrefixSpan::PrefixSpan(const TransactionIndexType minSupport, const IndexType maxPatternSize, std::fstream& outFile)
+:minSupport_(minSupport), maxPatternSize_(maxPatternSize), outFile_(outFile)
+{}
+
 DataProjection::DataProjection(const Data& data)
 :transactionsRef_(), startIndex_()
 {
-    transactionsRef_.resize(data.data_.size(), nullptr);
     startIndex_.resize(data.data_.size(), 0);
-    for(unsigned int itData = 0; itData != data.data_.size(); ++itData){
+
+    transactionsRef_.resize(data.data_.size(), nullptr);
+    for(TransactionIndexType itData = 0; itData != data.data_.size(); ++itData){
         transactionsRef_.push_back(&data.data_[itData]);
     }
 }
 
-const Transaction& DataProjection::getTransaction(unsigned int index) const{
+const Transaction& DataProjection::getTransaction(const TransactionIndexType index) const{
     return *transactionsRef_[index];
 }
 
-const unsigned int DataProjection::DataProjection::getIndeces(unsigned int index) const{
+const IndexType DataProjection::DataProjection::getIndeces(const IndexType index) const{
     return startIndex_[index];
 }
 
@@ -24,11 +51,11 @@ void DataProjection::pushTransaction(const Transaction& transaction){
     transactionsRef_.push_back(&transaction);
 }
 
-void DataProjection::pushIndeces(const unsigned int index){
+void DataProjection::pushIndeces(const IndexType index){
     startIndex_.push_back(index);
 }
 
-unsigned int DataProjection::size() const{
+TransactionIndexType DataProjection::size() const{
     return transactionsRef_.size();
 }
 
@@ -38,26 +65,36 @@ void DataProjection::clear(){
 }
 
 void PrefixSpan::saveInfo(const DataProjection& data, const Pattern& prefixPattern, bool verbose){
-    patterns_.push_back(prefixPattern);
+    std::stringstream tmp;
+    SystemStats stats = SystemStats::getInstance();
+
+    stats.memoryUsage_.snapshot();
+
+    // print prefix
+    for(const auto it : prefixPattern){
+        tmp << it << " ";
+    }
+    
+    // print all transaction in current database
+    tmp << "\n(";
+    for(TransactionIndexType i = 0; i < data.size(); ++i){
+        tmp << data.getTransaction(i).first << " ";
+    }
+    tmp << ") #" << data.size() << '\n';
+
+    std::string strtmp = tmp.str();
+    outFile_ << strtmp;
+    std::flush(outFile_);
 
     if(verbose){
-        // print prefix
-        for(const auto it : prefixPattern){
-            std::cout << it << " ";
-        }
-        
-        // print all transaction in current database
-        std::cout << "\n(";
-        for(unsigned int i = 0; i < data.size(); ++i){
-            std::cout << data.getTransaction(i).first << " ";
-        }
-        std::cout << ") #" << data.size() << std::endl;
+        std::cout << strtmp;
+        std::flush(std::cout);
     }
 }
 
-void PrefixSpan::prefixProject(const DataProjection& data, Pattern prefixPattern, bool verbose){
-    std::set<unsigned int> itemCount; // bigger to prevent collisions
-    DataProjection newData(data);
+void PrefixSpan::prefixProject(const DataProjection& data, bool verbose, Pattern prefixPattern){
+    std::set<IndexType> itemSet;
+    DataProjection newData;
 
     if (data.size() < this->minSupport_){
         return;
@@ -72,27 +109,27 @@ void PrefixSpan::prefixProject(const DataProjection& data, Pattern prefixPattern
     // sort items, that are in the dataset. Those that arent in the dataset wont be included.
     // it will speed up algorithm
     const auto dataSize = data.size();
-    for(unsigned int itTransaction = 0; itTransaction != dataSize; ++itTransaction){
+    for(TransactionIndexType itTransaction = 0; itTransaction != dataSize; ++itTransaction){
         const auto& transaction = data.getTransaction(itTransaction).second;
         const auto transSize = transaction.size();
-        for(unsigned int itItem = data.getIndeces(itTransaction); itItem != transSize; ++itItem){
-            itemCount.insert(transaction[itItem]);
+        for(auto itItem = data.getIndeces(itTransaction); itItem != transSize; ++itItem){
+            itemSet.insert(transaction[itItem]);
         }
     }
 
-    for(auto itItemCount : itemCount){
+    for(auto itItemCount : itemSet){
 
-        // go through all transactions and add those to newData, that equals to evaluated item from itemCount
+        // go through all transactions and add those to newData, that equals to evaluated item from itemSet
         // it must be noted, that all transactions in evaluated database have the same prefixes.
-        for(unsigned int itTransaction = 0; itTransaction != dataSize; ++itTransaction){
+        for(TransactionIndexType itTransaction = 0; itTransaction != dataSize; ++itTransaction){
             const auto& transaction = data.getTransaction(itTransaction);
 
             // the next item may be not next to the previous item. For example having prefix <abc> and searching for <d>
             // will occur in <abcefghdpi>
-            for(unsigned int itItem = data.getIndeces(itTransaction); itItem != transaction.second.size(); ++itItem){
+            for(auto itItem = data.getIndeces(itTransaction); itItem != transaction.second.size(); ++itItem){
                 if(transaction.second[itItem] == itItemCount){
                     newData.pushTransaction(transaction);
-                    newData.pushIndeces(itItem + 1); // start searching for pattern at next item for this transaction
+                    newData.pushIndeces(itItem + 1); // start searching for pattern at the next item for this transaction
                     break;
                 }
             }
@@ -101,7 +138,7 @@ void PrefixSpan::prefixProject(const DataProjection& data, Pattern prefixPattern
         // after going through all, push eveluated item to the searched pattern, creating new prefix
         // and for all transactions with this new prefix call prefixProject
         prefixPattern.push_back(itItemCount);
-        this->prefixProject(newData, prefixPattern, verbose);
+        this->prefixProject(newData, verbose, prefixPattern);
         prefixPattern.pop_back();
         newData.clear();
     }

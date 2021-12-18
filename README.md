@@ -39,8 +39,8 @@ Ponadto zaimplementowany program zostanie porównany z gotowym rozwiązaniem z b
 
 Pozwoli to na proste sprawdzenie poprawności rozwiązania, jak i jego efektywności względem róznej wielkości zbiorów danych.
 Dodatkowo zaimplementowany algorytm PrefixSpan zostanie porównany z innymi algorytmami z grupy algorytmów do odkrywania częstych wzorców sekwencyjnych, takich jak:
-* SPADE
-* 
+* FreeSpan
+* GSP
 
 
 Zbiory danych, które zostaną użyte podczas badań oraz testów, to:

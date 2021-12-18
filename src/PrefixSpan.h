@@ -1,15 +1,21 @@
 #ifndef PREFIXSPAN_H
 #define PREFIXSPAN_H
 
-#include <string>
+#include <fstream>
 #include <vector>
 #include <iostream>
 #include <set>
+#include <sstream>
+
+#include "utils.h"
 
 namespace PrefixSpan{
 
-typedef std::vector<unsigned int> Pattern;
-typedef std::pair<unsigned int, std::vector<unsigned int>> Transaction;
+typedef unsigned short int IndexType;
+typedef unsigned int TransactionIndexType;
+typedef std::vector<IndexType> Pattern;
+typedef std::vector<IndexType> TransactionData;
+typedef std::pair<TransactionIndexType, TransactionData> Transaction;
 
 class DataIterator;
 
@@ -18,35 +24,35 @@ struct Data{
 
     Data() = default;
 
-    bool load(bool findMaxItem = true);
+    bool load(const std::string& filename);
 };
 
 class DataProjection{
     std::vector<const Transaction*> transactionsRef_;
-    std::vector<unsigned int> startIndex_;
+    std::vector<IndexType> startIndex_;
 
 public:
     DataProjection() = default;
     DataProjection(const Data& data);
 
-    const Transaction& getTransaction(unsigned int index) const;
-    const unsigned int getIndeces(unsigned int index) const;
+    const Transaction& getTransaction(const TransactionIndexType index) const;
+    const IndexType getIndeces(const IndexType index) const;
     void pushTransaction(const Transaction& transaction);
-    void pushIndeces(const unsigned int index);
-    unsigned int size() const;
+    void pushIndeces(const IndexType index);
+    TransactionIndexType size() const;
     void clear();
 };
 
 class PrefixSpan{
-    unsigned int minSupport_;
-    unsigned int maxPatternSize_;
-    std::vector<Pattern> patterns_;
-    //Pattern searchedPattern_;
+    TransactionIndexType minSupport_;
+    IndexType maxPatternSize_;
+    std::fstream& outFile_;
 
     void saveInfo(const DataProjection& data, const Pattern& prefixPattern, bool verbose);
 
 public:
-    void prefixProject(const DataProjection& database, Pattern prefixPattern, bool verbose = true);
+    PrefixSpan(const TransactionIndexType minSupport, const IndexType maxPatternSize, std::fstream& outFile);
+    void prefixProject(const DataProjection& database, bool verbose, Pattern prefixPattern = Pattern());
 };
 
 }
