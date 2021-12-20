@@ -13,13 +13,11 @@ Umeshwar Dayal, Member, IEEE Computer Society, and Mei-Chun Hsu
 
 Ponadto zostanie do niego dodana modyfikacja umożliwiająca wykonanie go wielowątkowo. Dzięki temu kosztem dodatkowej pamięci, obliczenia powinny zostać w teorii przyśpieszone. 
 
-Algorytm w obydwu wersjach zostanie zbadany pod kątem wydajności czasowej oraz pamięciowej. Zostanie on również porównany z implementacją znajdującą się na stronie 
-https://github.com/zhhailon/prefixspan
-
+Algorytm w obydwu wersjach zostanie zbadany pod kątem wydajności czasowej oraz pamięciowej.
 Język python zostanie użyty do stworzenia prostych skryptów, między innymi do porówania dwóch plików z transakcjami.
 
 ## Implementacja
-Idea algorytmu PrefixSpan polega na rekurencyjnym dodawaniu prefiksu. Prefiks jest definiowany jako najbardziej lewa część wyrażenia.
+Idea algorytmu PrefixSpan polega na rekurencyjnym dodawaniu prefiksu. Prefiks jest definiowany jako sekwencja pozycji, która jest rozwijana od lewej do prawej strony wyrazu.
 W każdej rekursji rozpatrywana jest część bazy, która zawiera rozpatrywany prefix (na samym początku prefix ma zerową długość). Dla każdej transakcji dla każdej rekursji, zostaje zapamiętana pozycja, od której prefix się kończy. Algorytm sprawdza, czy dla danej rozpatrywanej pozycji występuje ona na prawo od prefiksa w danej rozpatrywanej transakcji. Jeżeli tak, to zostaje ona dodana do nowej bazy transakcji wraz z pozycją końca nowego prefiksa. 
 W celu optymalizacji pamięci, przechowuje się w projekcji bazy wskazania na dane transakcje.
 
@@ -67,7 +65,8 @@ def second(database, prefix, item):
         first(database, prefix)
 
 ## Założenia
-Dostarczone dane są w formie tabelarycznej, w której to każda linia reprezentuje jedną transakcję. Pozycje w transakcji są oddzielone spacją.
+* Dostarczone dane są w formie tabelarycznej, w której to każda linia reprezentuje jedną transakcję. Pozycje w transakcji są oddzielone spacją.
+* P
 
 
 ## Testy oraz eksperymenty
@@ -82,4 +81,4 @@ Zbiory danych, które zostaną użyte podczas badań oraz testów znajdują się
 * mushroom.dat
 * accidents.dat
 * pumsb_star.dat
-* webdocs.dat - waga 0.5 GB
+* webdocs.dat - waga 0.5 GB. Możliwe, że ten zbiór danych zostnie przycięty do możliwości sprzętu, na którym przeprowadzane są eksperymenty.

@@ -85,7 +85,7 @@ PrefixSpan::PrefixSpan(const TransactionIndexType minSupport, const IndexType ma
 
 void PrefixSpan::saveInfo(const DataProjection& data, const Pattern& prefixPattern, bool verbose, bool printTransNumb, bool useThreads){
     std::stringstream tmp;
-    SystemStats& stats = SystemStats::getInstance();
+    static SystemStats& stats = SystemStats::getInstance();
 
     stats.memoryUsage_.snapshot();
 
@@ -150,6 +150,8 @@ void PrefixSpan::prefixProjectImpl(std::shared_ptr<const DataProjection> databas
     std::set<IndexType> itemSet;
     ++recursiveLevel;
 
+    static SystemStats& stats = SystemStats::getInstance();
+
     // new database with some prefix
     if (database->size() < this->minSupport_){
         return;
@@ -161,6 +163,8 @@ void PrefixSpan::prefixProjectImpl(std::shared_ptr<const DataProjection> databas
     if(this->maxPatternSize_ != 0 && prefixPattern.size() >= this->maxPatternSize_){
         return;
     }
+
+    stats.timeIntervals_.snapshot(std::string("Start iteration for pattern: ") + patternToStr(prefixPattern));
     
     // sort items, that are in the dataset. Those that arent in the dataset wont be included.
     // it will speed up algorithm
@@ -187,13 +191,16 @@ void PrefixSpan::prefixProjectImpl(std::shared_ptr<const DataProjection> databas
             this->prefixProjectImplWithLoopState(database, verbose, printTransNumb, useThreads, recursiveLevel, prefixPattern, itItemCount, dataSize);
         }
     }
+    stats.timeIntervals_.snapshot(std::string("End iteration for pattern: ") + patternToStr(prefixPattern));
 }
 
 void PrefixSpan::prefixProjectImplWithLoopState(std::shared_ptr<const DataProjection> database, bool verbose, bool printTransNumb, bool useThreads, \
     Priority recursiveLevel, Pattern prefixPattern, const IndexType itItemCount, const TransactionIndexType dataSize){
 
     std::shared_ptr<DataProjection> newData = std::make_shared<DataProjection>();
-    SystemStats& stats = SystemStats::getInstance();
+    static SystemStats& stats = SystemStats::getInstance();
+    ++recursiveLevel;
+    stats.timeIntervals_.snapshot(std::string("Start iteration for pattern: ") + patternToStr(prefixPattern));
 
     // go through all transactions and add those to newData, that equals to evaluated item from itemSet
     // it must be noted, that all transactions in evaluated database have the same prefixes.
@@ -210,11 +217,11 @@ void PrefixSpan::prefixProjectImplWithLoopState(std::shared_ptr<const DataProjec
             }
         }
     }
+    stats.timeIntervals_.snapshot(std::string("End iteration for pattern: ") + patternToStr(prefixPattern));
 
     // after going through all, push eveluated item to the searched pattern, creating new prefix
     // and for all transactions with this new prefix call prefixProjectImpl
     prefixPattern.push_back(itItemCount);
-    stats.timeIntervals_.snapshot(std::string("Start iteration for pattern: ") + patternToStr(prefixPattern));
     if(useThreads){
         threadPool_->addJob([this, newData, verbose, printTransNumb, useThreads, recursiveLevel, prefixPattern]
                 {this->prefixProjectImpl(newData, verbose, printTransNumb, useThreads, recursiveLevel, prefixPattern);}, recursiveLevel);
@@ -224,7 +231,6 @@ void PrefixSpan::prefixProjectImplWithLoopState(std::shared_ptr<const DataProjec
         this->prefixProjectImpl(newData, verbose, printTransNumb, useThreads, recursiveLevel, prefixPattern);
         // newData->clear(); - data will be cleared automatically by shared_ptr
     }
-    stats.timeIntervals_.snapshot(std::string("End iteration for pattern: ") + patternToStr(prefixPattern));
     prefixPattern.pop_back();
 }
 
