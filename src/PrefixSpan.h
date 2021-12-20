@@ -12,6 +12,7 @@
 #include <mutex>
 #include <condition_variable>
 #include <cstdio>
+#include <atomic>
 
 #include "utils.h"
 
@@ -76,15 +77,21 @@ public:
     void release();
     void acquire();
     bool try_acquire();
+    void decrement();
 
     int getValue();
 };
 
 class ThreadPool{
+    unsigned int numThreads_;
     std::vector<std::thread> pool_;
     std::vector<FunWithRank> jobs_; // sorted as heap
+    std::atomic<int> working_;
+    std::atomic<bool> end_;
+    std::atomic<bool> endAll_;
     mutable std::mutex lock_;
-    mutable Semaphore semaphore_;
+    mutable Semaphore semaphoreJobs_;
+    mutable Semaphore semaphoreWorkingThreads_;
 
     void worker();
 
@@ -97,8 +104,11 @@ public:
     ThreadPool(const ThreadPool& ) = delete;
     ThreadPool& operator=(const ThreadPool&) = delete;
 
+    ~ThreadPool();
+
     void addJob(std::function<void()> fun, Priority priority);
     int threadOccupancy() const;
+    void endThreadsWait();
 };
 
 class PrefixSpan{
@@ -110,15 +120,16 @@ class PrefixSpan{
     unsigned int numOfThreads_;
     Semaphore semaphore_;
 
-    void saveInfo(const DataProjection& data, const Pattern& prefixPattern, bool verbose);
-    void prefixProjectImpl(std::shared_ptr<const DataProjection> database, bool verbose, bool useThreads, Priority recursiveLevel, Pattern prefixPattern = Pattern());
-    void prefixProjectImplWithLoopState(std::shared_ptr<const DataProjection> database, bool verbose, bool useThreads, \
+    void saveInfo(const DataProjection& data, const Pattern& prefixPattern, bool verbose, bool printTransNumb, bool useThreads);
+    void prefixProjectImpl(std::shared_ptr<const DataProjection> database, bool verbose, bool printTransNumb, bool useThreads, Priority recursiveLevel, Pattern prefixPattern = Pattern());
+    void prefixProjectImplWithLoopState(std::shared_ptr<const DataProjection> database, bool verbose, bool printTransNumb, bool useThreads, \
         Priority recursiveLevel, Pattern prefixPattern, const IndexType itItemCount, const TransactionIndexType dataSize);
 
 public:
+    ~PrefixSpan();
     PrefixSpan(const TransactionIndexType minSupport, const IndexType maxPatternSize, std::fstream& outFile);
     PrefixSpan(const TransactionIndexType minSupport, const IndexType maxPatternSize, std::fstream& outFile, size_t maxMemoryUsage, unsigned int numOfThreads);
-    void prefixProject(const Data& database, bool verbose = false, bool useThreads = false);
+    void prefixProject(const Data& database, bool verbose = false, bool printTransNumb = false, bool useThreads = false);
 };
 
 }

@@ -24,6 +24,7 @@ public:
         for(unsigned int i = 0; i < line.size(); ++i){
             if(line[i][0] == '-'){
                 key = line[i];
+                parsed_[key];
             }
             else {
                 parsed_[key].push_back(line[i]);
@@ -49,6 +50,10 @@ public:
             ret.push_back(TargetClass(it));
         }
         return ret;
+    }
+
+    bool flagExist(const std::string& arg){
+        return parsed_.find(arg) != parsed_.end();
     }
 };
 
@@ -101,6 +106,14 @@ int main(int argc, char** argv){
     PrefixSpan::IndexType maxPatternSize = parser.getArg<PrefixSpan::TransactionIndexType>("-mp", 1)[0];
     std::vector<std::string> files = parser.getArg("-f", -1);
     std::vector<std::string> outputFile = parser.getArg("-o", -1);
+    bool useThread = parser.flagExist("-t");
+    bool verbose = parser.flagExist("-v");
+    bool printAll = parser.flagExist("-p");
+    auto threadsVec = parser.getArg<unsigned int>("-thr",-1);
+    int threads = 0;
+    if(! threadsVec.empty()){
+        threads = threadsVec[0];
+    }
 
     parser.printArgs();
 
@@ -112,8 +125,9 @@ int main(int argc, char** argv){
         }
     }
 
-    SystemStats stats = SystemStats::getInstance();
-    int num_threads = std::thread::hardware_concurrency() / 2;
+    SystemStats& stats = SystemStats::getInstance();
+    int num_threads = std::thread::hardware_concurrency();
+    std::cout << "Avaliable threads; " << num_threads << std::endl;
 
     std::fstream out;
     if(outputFile.size() == 1){
@@ -127,16 +141,31 @@ int main(int argc, char** argv){
         else{
             out.open(outputFile[i], std::ios_base::in | std::ios_base::trunc);
         }
-        
-        PrefixSpan::PrefixSpan algorithm(minSupport, maxPatternSize, out);
+
+        std::unique_ptr<PrefixSpan::PrefixSpan> algorithm;
+        if(useThread){
+            std::cout << "Using multithreading" << std::endl;
+            algorithm = std::make_unique<PrefixSpan::PrefixSpan>(minSupport, maxPatternSize, out, PrefixSpan::MIN_MEMORY_USAGE + 1, threads);
+        }
+        else{
+            std::cout << "Single thread" << std::endl;
+            algorithm = std::make_unique<PrefixSpan::PrefixSpan>(minSupport, maxPatternSize, out);
+        } 
         PrefixSpan::Data data;
 
         data.load(files[i]);
         stats.timeIntervals_.snapshot("Start PrefixSpan");
-        algorithm.prefixProject(data);
+        //algorithm.prefixProject(data, false);
+        algorithm->prefixProject(data, verbose, printAll, useThread);
         stats.timeIntervals_.snapshot("End PrefixSpan");
+
+        auto report = stats.getReport();
+        std::lock_guard<std::mutex> guard(stats.outputSynch);
+        std::cout << report.str() << std::endl;
+
         out.close();
     }
+    
 
     std::cout << "Program ends" << std::endl;
     return 0;

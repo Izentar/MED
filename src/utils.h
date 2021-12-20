@@ -6,87 +6,71 @@
 #include <vector>
 #include <sstream>
 #include <chrono>
+#include <mutex>
 #include <thread>
+#include <iomanip>
+#include <iostream>
 
-static std::string timeToHuman(std::chrono::_V2::system_clock::time_point timePoint){
-    auto tmp = std::chrono::system_clock::to_time_t(timePoint);
-    return std::string(std::ctime(&tmp));
-}
+typedef std::chrono::_V2::high_resolution_clock::time_point TimePoint;
+
+std::string timeToHuman(TimePoint timePoint);
 
 class SystemStats{    
-    
-
 public:
+    std::mutex outputSynch;
+
     class MemoryUsage{
         std::vector<size_t> reportedMemUsage_;
-        std::vector<std::chrono::_V2::system_clock::time_point> reportedTime_;
+        std::vector<TimePoint> reportedTime_;
         std::vector<std::thread::id> threadID_;
+        std::mutex lock_;
 
     public:
-        void snapshot(){
-            struct rusage myusage;
-            getrusage(RUSAGE_SELF, &myusage);
+        void snapshot();
 
-            reportedMemUsage_.push_back(myusage.ru_maxrss);
-            reportedTime_.push_back(std::chrono::system_clock::now());
-            threadID_.push_back(std::this_thread::get_id());
-        }
-
-        std::stringstream getReport(){
-            std::stringstream ss;
-            ss << "Reported memory usage:\nTime\tMemory (KB)\t Thread id\n-----------------------------------------\n";
-            for(std::size_t i = 0; i < reportedMemUsage_.size(); ++i){
-                
-                ss << timeToHuman(reportedTime_[i]) << "\t" << reportedMemUsage_[i] << '\t' << threadID_[i] << '\n';
-            }
-
-            return ss;
-        }
+        std::stringstream getReport();
     };
 
     class TimeIntervals{
-        std::vector<std::chrono::_V2::system_clock::time_point> reportedTime_;
+        std::vector<TimePoint> reportedTime_;
         std::vector<std::string> note_;
+        std::mutex lock_;
 
     public:
-        void snapshot(const std::string& note){
-            note_.push_back(note);
-            reportedTime_.push_back(std::chrono::system_clock::now());
-        }
+        void snapshot(const std::string& note);
 
-        std::stringstream getReport(){
-            std::stringstream ss;
-            ss << "Reported time:\nTime\tNote\n-----------------------------------------\n";
-            for(size_t i = 0; i < reportedTime_.size(); ++i){
-                
-                ss << timeToHuman(reportedTime_[i]) << "\t" << note_[i] << '\n';
-            }
-
-            return ss;
-        }
+        std::stringstream getReport();
     };
 
+    class Destroyer{
+        SystemStats *systemStats_;
 
-    static SystemStats& getInstance(){
-        static SystemStats instance;
-        return instance;
-    }
+        public:
+            Destroyer(SystemStats* ptr = nullptr);
+            ~Destroyer();
+            void setSystemStats(SystemStats* ptr);
+    };
+
+    friend class Destroyer;
+
+    static SystemStats& getInstance();
+    static void deleteInstance();
 
     MemoryUsage memoryUsage_;
     TimeIntervals timeIntervals_;
 
-    std::stringstream getReport(){
-        std::stringstream ss;
-        ss << memoryUsage_.getReport().rdbuf();
-        ss << "\n===================================================\n";
-        ss << timeIntervals_.getReport().rdbuf();
+    std::stringstream getReport();
 
-        return ss;
-    }
+    SystemStats(const SystemStats&) = delete;
+    SystemStats& operator=(const SystemStats&) = delete;
 
 private:
     SystemStats() = default;
-    
+    ~SystemStats() = default;
+
+    static SystemStats* stats_;
+    static Destroyer destroyer_;
+    static std::mutex lock_;    
 };
 
 #endif

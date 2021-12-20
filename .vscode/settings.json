@@ -52,6 +52,7 @@
         "thread": "cpp",
         "mutex": "cpp",
         "condition_variable": "cpp",
-        "map": "cpp"
+        "map": "cpp",
+        "iomanip": "cpp"
     }
 }
