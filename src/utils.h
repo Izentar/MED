@@ -1,13 +1,14 @@
-#ifndef UTILS_H
-#define UTILS_H
+#ifndef PREFIXSPAN_UTILS_H
+#define PREFIXSPAN_UTILS_H
 
 #include<stdlib.h>
 #include <sys/resource.h>
 #include <vector>
 #include <sstream>
 #include <chrono>
+#include <thread>
 
-std::string timeToHuman(std::chrono::_V2::system_clock::time_point timePoint){
+static std::string timeToHuman(std::chrono::_V2::system_clock::time_point timePoint){
     auto tmp = std::chrono::system_clock::to_time_t(timePoint);
     return std::string(std::ctime(&tmp));
 }
@@ -19,6 +20,7 @@ public:
     class MemoryUsage{
         std::vector<size_t> reportedMemUsage_;
         std::vector<std::chrono::_V2::system_clock::time_point> reportedTime_;
+        std::vector<std::thread::id> threadID_;
 
     public:
         void snapshot(){
@@ -27,14 +29,15 @@ public:
 
             reportedMemUsage_.push_back(myusage.ru_maxrss);
             reportedTime_.push_back(std::chrono::system_clock::now());
+            threadID_.push_back(std::this_thread::get_id());
         }
 
         std::stringstream getReport(){
             std::stringstream ss;
-            ss << "Reported memory usage:\nTime\tMemory (KB)\n-----------------------------------------\n";
+            ss << "Reported memory usage:\nTime\tMemory (KB)\t Thread id\n-----------------------------------------\n";
             for(std::size_t i = 0; i < reportedMemUsage_.size(); ++i){
                 
-                ss << timeToHuman(reportedTime_[i]) << "\t" << reportedMemUsage_[i] << '\n';
+                ss << timeToHuman(reportedTime_[i]) << "\t" << reportedMemUsage_[i] << '\t' << threadID_[i] << '\n';
             }
 
             return ss;

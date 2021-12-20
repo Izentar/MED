@@ -44,6 +44,14 @@
         "cinttypes": "cpp",
         "typeinfo": "cpp",
         "bit": "cpp",
-        "iostream": "cpp"
+        "iostream": "cpp",
+        "set": "cpp",
+        "ctime": "cpp",
+        "chrono": "cpp",
+        "ratio": "cpp",
+        "thread": "cpp",
+        "mutex": "cpp",
+        "condition_variable": "cpp",
+        "map": "cpp"
     }
 }

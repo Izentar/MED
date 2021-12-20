@@ -7,7 +7,7 @@ OUT = prefixspan.out
 OBJS = $(SRCS:%.cpp=%.o)
 
 prefixspan:
-	g++ -std=c++17 -O3 -Wextra -Wall $(SRCS) $(HEADERS_ONLY) -o $(OUT)
+	g++ -std=c++17 -O3 -Wextra -Wall -g -pthread -lpthread $(SRCS) $(HEADERS_ONLY) -o $(OUT)
 
 
 clean:

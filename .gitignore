@@ -1,3 +1,5 @@
 *.gz
 *.dat
 *.json
+*.txt
+*.out
