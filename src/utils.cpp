@@ -36,10 +36,10 @@ void SystemStats::MemoryUsage::snapshot(){
 std::stringstream SystemStats::MemoryUsage::getReport(){
     std::lock_guard<std::mutex> guard(lock_);
     std::stringstream ss;
-    ss << "Reported memory usage:\nTime diff\tMemory (KB)\t Thread id\n-----------------------------------------\n";
+    ss << "Reported memory usage\nTime diff;Memory (KB);Thread id\n";
     for(std::size_t i = 0; i < reportedMemUsage_.size(); ++i){
         
-        ss << timeDiff(reportedTime_[0], reportedTime_[i]) << '\t' << reportedMemUsage_[i] << "\t\t" << threadID_[i] << '\n';
+        ss << timeDiff(reportedTime_[0], reportedTime_[i]) << ';' << reportedMemUsage_[i] << ";" << threadID_[i] << '\n';
     }
 
     return ss;
@@ -54,10 +54,10 @@ void SystemStats::TimeIntervals::snapshot(const std::string& note){
 std::stringstream SystemStats::TimeIntervals::getReport(){
     std::lock_guard<std::mutex> guard(lock_);
     std::stringstream ss;
-    ss << "Reported time:\nTime diff\tNote\n-----------------------------------------\n";
+    ss << "Reported time;\nTime diff;Note\n";
     for(size_t i = 0; i < reportedTime_.size(); ++i){
         
-        ss << timeDiff(reportedTime_[0], reportedTime_[i]) << "\t" << note_[i] << '\n';
+        ss << timeDiff(reportedTime_[0], reportedTime_[i]) << ";" << note_[i] << '\n';
     }
 
     return ss;

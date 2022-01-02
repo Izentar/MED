@@ -83,7 +83,7 @@ PrefixSpan::PrefixSpan(const TransactionIndexType minSupport, const IndexType ma
 :minSupport_(minSupport), maxPatternSize_(maxPatternSize), outFile_(outFile), threadPool_(nullptr), maxMemoryUsage_(maxMemoryUsage), numOfThreads_(numOfThreads), semaphore_(numOfThreads)
 {}
 
-void PrefixSpan::saveInfo(const DataProjection& data, const Pattern& prefixPattern, bool verbose, bool printTransNumb, bool useThreads){
+void PrefixSpan::saveInfo(const DataProjection& data, const Pattern& prefixPattern, const Flags& flags){
     std::stringstream tmp;
     static SystemStats& stats = SystemStats::getInstance();
 
@@ -96,7 +96,7 @@ void PrefixSpan::saveInfo(const DataProjection& data, const Pattern& prefixPatte
     tmp << '\n';
     
     // print all transaction in current database
-    if(printTransNumb){
+    if(flags.printTransNumb){
         tmp << "(";
         for(TransactionIndexType i = 0; i < data.size(); ++i){
             tmp << data.getTransaction(i).first << " ";
@@ -104,49 +104,49 @@ void PrefixSpan::saveInfo(const DataProjection& data, const Pattern& prefixPatte
         tmp << ") #" << data.size() << '\n';
     }
 
-    auto flush = [&]{
+    auto funFlush = [&]{
         std::string strtmp = tmp.str();
         outFile_ << strtmp;
         std::flush(outFile_);
 
-        if(verbose){
+        if(flags.verbose){
             std::cout << strtmp;
             std::flush(std::cout);
         }
     };
 
-    if(useThreads){
+    if(flags.useThreads){
         std::lock_guard<std::mutex> guard(stats.outputSynch);
-        flush();
+        funFlush();
     }
     else{
-        flush();
+        funFlush();
     }
 }
 
-void PrefixSpan::prefixProject(const Data& database, bool verbose, bool printTransNumb, bool useThreads){
+void PrefixSpan::prefixProject(const Data& database, const Flags& flags){
     auto data = std::make_shared<const DataProjection>(database);
 
-    if(useThreads && numOfThreads_ > 1){
+    if(flags.useThreads && numOfThreads_ > 1){
         if(MIN_MEMORY_USAGE > maxMemoryUsage_){
             throw std::runtime_error("Bad max memory usage. Was maxMemoryUsage set for multithreading?");
         }
         this->threadPool_ = std::make_unique<ThreadPool>(numOfThreads_);
-        threadPool_->addJob([this, data, verbose, printTransNumb, useThreads]{this->prefixProjectImpl(data, verbose, printTransNumb, useThreads, 0);}, 0);
+        threadPool_->addJob([this, data, flags]{this->prefixProjectImpl(data, flags, 0);}, 0);
         threadPool_->endThreadsWait();
     }
-    else if(useThreads && numOfThreads_ <= 1){
+    else if(flags.useThreads && numOfThreads_ <= 1){
         throw std::runtime_error("Set flag for multithreading but bad numOfThreads variable. Was numOfThreads set for multithreading?");
     }
     else{
-        prefixProjectImpl(data, verbose, printTransNumb, useThreads, 0);
+        prefixProjectImpl(data, flags, 0);
     }
     
 }
 
 PrefixSpan::~PrefixSpan(){}
 
-void PrefixSpan::prefixProjectImpl(std::shared_ptr<const DataProjection> database, bool verbose, bool printTransNumb, bool useThreads, Priority recursiveLevel, Pattern prefixPattern){
+void PrefixSpan::prefixProjectImpl(std::shared_ptr<const DataProjection> database, const Flags& flags, Priority recursiveLevel, Pattern prefixPattern){
     std::set<IndexType> itemSet;
     ++recursiveLevel;
 
@@ -157,7 +157,7 @@ void PrefixSpan::prefixProjectImpl(std::shared_ptr<const DataProjection> databas
         return;
     }    
 
-    saveInfo(*database, prefixPattern, verbose, printTransNumb, useThreads);
+    saveInfo(*database, prefixPattern, flags);
 
     // prefix has max lenght
     if(this->maxPatternSize_ != 0 && prefixPattern.size() >= this->maxPatternSize_){
@@ -181,20 +181,20 @@ void PrefixSpan::prefixProjectImpl(std::shared_ptr<const DataProjection> databas
     // if so, add those to database, remember index and call recursive with new database.
     for(auto itItemCount : itemSet){
         
-        if(useThreads){
+        if(flags.useThreads){
             // doing so we save on memory, because no new database will be created. Most of the memory is used by transactions and not by itemSet.
             // threads prefer jobs that are deep into recursion, so it is possible that those would end sooner, freeing up some memory.
-            threadPool_->addJob([this, database, verbose, printTransNumb, useThreads, recursiveLevel, prefixPattern, itItemCount, dataSize]
-                    {this->prefixProjectImplWithLoopState(database, verbose, printTransNumb, useThreads, recursiveLevel, prefixPattern, itItemCount, dataSize);}, recursiveLevel);
+            threadPool_->addJob([this, database, flags, recursiveLevel, prefixPattern, itItemCount, dataSize]
+                    {this->prefixProjectImplWithLoopState(database, flags, recursiveLevel, prefixPattern, itItemCount, dataSize);}, recursiveLevel);
         }
         else{
-            this->prefixProjectImplWithLoopState(database, verbose, printTransNumb, useThreads, recursiveLevel, prefixPattern, itItemCount, dataSize);
+            this->prefixProjectImplWithLoopState(database, flags, recursiveLevel, prefixPattern, itItemCount, dataSize);
         }
     }
     stats.timeIntervals_.snapshot(std::string("End iteration for pattern: ") + patternToStr(prefixPattern));
 }
 
-void PrefixSpan::prefixProjectImplWithLoopState(std::shared_ptr<const DataProjection> database, bool verbose, bool printTransNumb, bool useThreads, \
+void PrefixSpan::prefixProjectImplWithLoopState(std::shared_ptr<const DataProjection> database, const Flags& flags, \
     Priority recursiveLevel, Pattern prefixPattern, const IndexType itItemCount, const TransactionIndexType dataSize){
 
     std::shared_ptr<DataProjection> newData = std::make_shared<DataProjection>();
@@ -222,17 +222,21 @@ void PrefixSpan::prefixProjectImplWithLoopState(std::shared_ptr<const DataProjec
     // after going through all, push eveluated item to the searched pattern, creating new prefix
     // and for all transactions with this new prefix call prefixProjectImpl
     prefixPattern.push_back(itItemCount);
-    if(useThreads){
-        threadPool_->addJob([this, newData, verbose, printTransNumb, useThreads, recursiveLevel, prefixPattern]
-                {this->prefixProjectImpl(newData, verbose, printTransNumb, useThreads, recursiveLevel, prefixPattern);}, recursiveLevel);
+    if(flags.useThreads){
+        threadPool_->addJob([this, newData, flags, recursiveLevel, prefixPattern]
+                {this->prefixProjectImpl(newData, flags, recursiveLevel, prefixPattern);}, recursiveLevel);
         // newData->clear(); - data will be cleared automatically by shared_ptr
     }
     else{
-        this->prefixProjectImpl(newData, verbose, printTransNumb, useThreads, recursiveLevel, prefixPattern);
+        this->prefixProjectImpl(newData, flags, recursiveLevel, prefixPattern);
         // newData->clear(); - data will be cleared automatically by shared_ptr
     }
     prefixPattern.pop_back();
 }
+
+PrefixSpan::Flags::Flags()
+:verbose(false), printTransNumb(false), useThreads(false)
+{}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
 

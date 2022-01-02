@@ -18,11 +18,11 @@
 
 namespace PrefixSpan{
 
-typedef unsigned short int IndexType;
+typedef unsigned int IndexType;
 typedef unsigned int TransactionIndexType;
 
 static const TransactionIndexType TransactionIndexMax = UINT32_MAX;
-static const IndexType IndexTypeMax = UINT16_MAX;
+static const IndexType IndexTypeMax = UINT32_MAX;
 
 typedef std::vector<IndexType> Pattern;
 typedef std::vector<IndexType> TransactionData;
@@ -120,16 +120,26 @@ class PrefixSpan{
     unsigned int numOfThreads_;
     Semaphore semaphore_;
 
-    void saveInfo(const DataProjection& data, const Pattern& prefixPattern, bool verbose, bool printTransNumb, bool useThreads);
-    void prefixProjectImpl(std::shared_ptr<const DataProjection> database, bool verbose, bool printTransNumb, bool useThreads, Priority recursiveLevel, Pattern prefixPattern = Pattern());
-    void prefixProjectImplWithLoopState(std::shared_ptr<const DataProjection> database, bool verbose, bool printTransNumb, bool useThreads, \
+public:
+    struct Flags{
+        bool verbose;
+        bool printTransNumb;
+        bool useThreads;
+
+        Flags();
+    };
+
+private:
+    void saveInfo(const DataProjection& data, const Pattern& prefixPattern, const Flags& flags);
+    void prefixProjectImpl(std::shared_ptr<const DataProjection> database, const Flags& flags, Priority recursiveLevel, Pattern prefixPattern = Pattern());
+    void prefixProjectImplWithLoopState(std::shared_ptr<const DataProjection> database, const Flags& flags, \
         Priority recursiveLevel, Pattern prefixPattern, const IndexType itItemCount, const TransactionIndexType dataSize);
 
 public:
     ~PrefixSpan();
     PrefixSpan(const TransactionIndexType minSupport, const IndexType maxPatternSize, std::fstream& outFile);
     PrefixSpan(const TransactionIndexType minSupport, const IndexType maxPatternSize, std::fstream& outFile, size_t maxMemoryUsage, unsigned int numOfThreads);
-    void prefixProject(const Data& database, bool verbose = false, bool printTransNumb = false, bool useThreads = false);
+    void prefixProject(const Data& database, const Flags& flags);
 };
 
 }

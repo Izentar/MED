@@ -90,6 +90,7 @@ public:
 
 int main(int argc, char** argv){
     Parser parser;
+    PrefixSpan::PrefixSpan::Flags flags;
 
     if(argc == 1){
         std::cout << "No arguments" << std::endl;
@@ -106,9 +107,9 @@ int main(int argc, char** argv){
     PrefixSpan::IndexType maxPatternSize = parser.getArg<PrefixSpan::TransactionIndexType>("-mp", 1)[0];
     std::vector<std::string> files = parser.getArg("-f", -1);
     std::vector<std::string> outputFile = parser.getArg("-o", -1);
-    bool useThread = parser.flagExist("-t");
-    bool verbose = parser.flagExist("-v");
-    bool printAll = parser.flagExist("-p");
+    flags.useThreads = parser.flagExist("-t");
+    flags.verbose = parser.flagExist("-v");
+    flags.printTransNumb = parser.flagExist("-p");
     auto threadsVec = parser.getArg<unsigned int>("-thr",-1);
     int threads = 0;
     if(! threadsVec.empty()){
@@ -143,7 +144,7 @@ int main(int argc, char** argv){
         }
 
         std::unique_ptr<PrefixSpan::PrefixSpan> algorithm;
-        if(useThread){
+        if(flags.useThreads){
             std::cout << "Using multithreading" << std::endl;
             algorithm = std::make_unique<PrefixSpan::PrefixSpan>(minSupport, maxPatternSize, out, PrefixSpan::MIN_MEMORY_USAGE + 1, threads);
         }
@@ -156,7 +157,7 @@ int main(int argc, char** argv){
         data.load(files[i]);
         stats.timeIntervals_.snapshot("Start PrefixSpan");
         //algorithm.prefixProject(data, false);
-        algorithm->prefixProject(data, verbose, printAll, useThread);
+        algorithm->prefixProject(data, flags);
         stats.timeIntervals_.snapshot("End PrefixSpan");
 
         auto report = stats.getReport();
