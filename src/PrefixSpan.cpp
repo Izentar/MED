@@ -166,7 +166,7 @@ void PrefixSpan::prefixProjectImpl(std::shared_ptr<const DataProjection> databas
         return;
     }
 
-    stats.timeIntervals_.snapshot(std::string("Start collecting items for pattern;") + patternToStr(prefixPattern));
+    //stats.timeIntervals_.snapshot(std::string("Start collecting items for pattern;") + patternToStr(prefixPattern));
     
     // sort items, that are in the dataset. Those that arent in the dataset wont be included.
     // it will speed up algorithm
@@ -178,7 +178,7 @@ void PrefixSpan::prefixProjectImpl(std::shared_ptr<const DataProjection> databas
             itemSet.insert(transaction[itItem]);
         }
     }
-    stats.timeIntervals_.snapshot(std::string("End collecting items for pattern;") + patternToStr(prefixPattern));
+    //stats.timeIntervals_.snapshot(std::string("End collecting items for pattern;") + patternToStr(prefixPattern));
 
     // loop that says - check if in this database exist prefix + item where between sum can be other items that != item.
     // if so, add those to database, remember index and call recursive with new database.
@@ -203,7 +203,7 @@ void PrefixSpan::prefixProjectImplWithLoopState(std::shared_ptr<const DataProjec
     static SystemStats& stats = SystemStats::getInstance();
     ++recursiveLevel;
     prefixPattern.push_back(item); // push eveluated item to the searched pattern, creating new prefix
-    stats.timeIntervals_.snapshot(std::string("Start search for pattern: ") + patternToStr(prefixPattern));
+    //stats.timeIntervals_.snapshot(std::string("Start search for pattern: ") + patternToStr(prefixPattern));
 
     // go through all transactions and add those to newData, that equals to evaluated item from itemSet
     // it must be noted, that all transactions in evaluated database have the same prefixes.
@@ -220,7 +220,7 @@ void PrefixSpan::prefixProjectImplWithLoopState(std::shared_ptr<const DataProjec
             }
         }
     }
-    stats.timeIntervals_.snapshot(std::string("End search for pattern: ") + patternToStr(prefixPattern));
+    //stats.timeIntervals_.snapshot(std::string("End search for pattern: ") + patternToStr(prefixPattern));
 
     // for all transactions with this new prefix call prefixProjectImpl
     if(flags.useThreads){
