@@ -152,7 +152,7 @@ void PrefixSpan::prefixProjectImpl(std::shared_ptr<const DataProjection> databas
     std::set<IndexType> itemSet;
     ++recursiveLevel;
 
-    static SystemStats& stats = SystemStats::getInstance();
+    //static SystemStats& stats = SystemStats::getInstance();
 
     // new database with some prefix
     if (database->size() < this->minSupport_){
@@ -200,7 +200,7 @@ void PrefixSpan::prefixProjectImplWithLoopState(std::shared_ptr<const DataProjec
     Priority recursiveLevel, Pattern prefixPattern, const IndexType item, const TransactionIndexType dataSize){
 
     std::shared_ptr<DataProjection> newData = std::make_shared<DataProjection>();
-    static SystemStats& stats = SystemStats::getInstance();
+    //static SystemStats& stats = SystemStats::getInstance();
     ++recursiveLevel;
     prefixPattern.push_back(item); // push eveluated item to the searched pattern, creating new prefix
     //stats.timeIntervals_.snapshot(std::string("Start search for pattern: ") + patternToStr(prefixPattern));
