@@ -219,6 +219,7 @@ int main(int argc, char** argv){
         } 
         PrefixSpan::Data data;
 
+        stats.memoryUsage_.snapshot();
         stats.timeIntervals_.snapshot("Start PrefixSpan");
         data.load(inputFile);
         algorithm->prefixProject(data, flags);
