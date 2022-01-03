@@ -33,6 +33,7 @@ public:
 
     class TimeIntervals{
         std::vector<TimePoint> reportedTime_;
+        std::vector<std::thread::id> threadID_;
         std::vector<std::string> note_;
         std::mutex lock_;
 

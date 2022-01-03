@@ -93,15 +93,17 @@ void PrefixSpan::saveInfo(const DataProjection& data, const Pattern& prefixPatte
     for(const auto it : prefixPattern){
         tmp << it << " ";
     }
-    tmp << '\n';
     
     // print all transaction in current database
     if(flags.printTransNumb){
-        tmp << "(";
+        tmp << "; ";
         for(TransactionIndexType i = 0; i < data.size(); ++i){
             tmp << data.getTransaction(i).first << " ";
         }
-        tmp << ") #" << data.size() << '\n';
+        tmp << "; " << data.size() << '\n';
+    }
+    else{
+        tmp << '\n';
     }
 
     auto funFlush = [&]{
@@ -164,7 +166,7 @@ void PrefixSpan::prefixProjectImpl(std::shared_ptr<const DataProjection> databas
         return;
     }
 
-    stats.timeIntervals_.snapshot(std::string("Start iteration for pattern: ") + patternToStr(prefixPattern));
+    stats.timeIntervals_.snapshot(std::string("Start collecting items for pattern;") + patternToStr(prefixPattern));
     
     // sort items, that are in the dataset. Those that arent in the dataset wont be included.
     // it will speed up algorithm
@@ -176,31 +178,32 @@ void PrefixSpan::prefixProjectImpl(std::shared_ptr<const DataProjection> databas
             itemSet.insert(transaction[itItem]);
         }
     }
+    stats.timeIntervals_.snapshot(std::string("End collecting items for pattern;") + patternToStr(prefixPattern));
 
-    // loop that says - check if in this database exist prefix + itItemCount where between sum can be other items that != itItemCount.
+    // loop that says - check if in this database exist prefix + item where between sum can be other items that != item.
     // if so, add those to database, remember index and call recursive with new database.
-    for(auto itItemCount : itemSet){
+    for(auto item : itemSet){
         
         if(flags.useThreads){
             // doing so we save on memory, because no new database will be created. Most of the memory is used by transactions and not by itemSet.
             // threads prefer jobs that are deep into recursion, so it is possible that those would end sooner, freeing up some memory.
-            threadPool_->addJob([this, database, flags, recursiveLevel, prefixPattern, itItemCount, dataSize]
-                    {this->prefixProjectImplWithLoopState(database, flags, recursiveLevel, prefixPattern, itItemCount, dataSize);}, recursiveLevel);
+            threadPool_->addJob([this, database, flags, recursiveLevel, prefixPattern, item, dataSize]
+                    {this->prefixProjectImplWithLoopState(database, flags, recursiveLevel, prefixPattern, item, dataSize);}, recursiveLevel);
         }
         else{
-            this->prefixProjectImplWithLoopState(database, flags, recursiveLevel, prefixPattern, itItemCount, dataSize);
+            this->prefixProjectImplWithLoopState(database, flags, recursiveLevel, prefixPattern, item, dataSize);
         }
     }
-    stats.timeIntervals_.snapshot(std::string("End iteration for pattern: ") + patternToStr(prefixPattern));
 }
 
 void PrefixSpan::prefixProjectImplWithLoopState(std::shared_ptr<const DataProjection> database, const Flags& flags, \
-    Priority recursiveLevel, Pattern prefixPattern, const IndexType itItemCount, const TransactionIndexType dataSize){
+    Priority recursiveLevel, Pattern prefixPattern, const IndexType item, const TransactionIndexType dataSize){
 
     std::shared_ptr<DataProjection> newData = std::make_shared<DataProjection>();
     static SystemStats& stats = SystemStats::getInstance();
     ++recursiveLevel;
-    stats.timeIntervals_.snapshot(std::string("Start iteration for pattern: ") + patternToStr(prefixPattern));
+    prefixPattern.push_back(item); // push eveluated item to the searched pattern, creating new prefix
+    stats.timeIntervals_.snapshot(std::string("Start search for pattern: ") + patternToStr(prefixPattern));
 
     // go through all transactions and add those to newData, that equals to evaluated item from itemSet
     // it must be noted, that all transactions in evaluated database have the same prefixes.
@@ -210,18 +213,16 @@ void PrefixSpan::prefixProjectImplWithLoopState(std::shared_ptr<const DataProjec
         // the next item may be not next to the previous item. For example having prefix <abc> and searching for <d>
         // will occur in <abcefghdpi>
         for(auto itItem = database->getIndeces(itTransaction); itItem != transaction.second.size(); ++itItem){
-            if(transaction.second[itItem] == itItemCount){
+            if(transaction.second[itItem] == item){
                 newData->pushTransaction(transaction);
                 newData->pushIndeces(itItem + 1); // start searching for pattern at the next item for this transaction
                 break;
             }
         }
     }
-    stats.timeIntervals_.snapshot(std::string("End iteration for pattern: ") + patternToStr(prefixPattern));
+    stats.timeIntervals_.snapshot(std::string("End search for pattern: ") + patternToStr(prefixPattern));
 
-    // after going through all, push eveluated item to the searched pattern, creating new prefix
-    // and for all transactions with this new prefix call prefixProjectImpl
-    prefixPattern.push_back(itItemCount);
+    // for all transactions with this new prefix call prefixProjectImpl
     if(flags.useThreads){
         threadPool_->addJob([this, newData, flags, recursiveLevel, prefixPattern]
                 {this->prefixProjectImpl(newData, flags, recursiveLevel, prefixPattern);}, recursiveLevel);

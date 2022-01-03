@@ -48,16 +48,17 @@ std::stringstream SystemStats::MemoryUsage::getReport(){
 void SystemStats::TimeIntervals::snapshot(const std::string& note){
     std::lock_guard<std::mutex> guard(lock_);
     note_.push_back(note);
+    threadID_.push_back(std::this_thread::get_id());
     reportedTime_.push_back(std::chrono::high_resolution_clock::now());
 }
 
 std::stringstream SystemStats::TimeIntervals::getReport(){
     std::lock_guard<std::mutex> guard(lock_);
     std::stringstream ss;
-    ss << "Reported time;\nTime diff;Note\n";
+    ss << "Reported time;\nTime diff;Thread id;Note\n";
     for(size_t i = 0; i < reportedTime_.size(); ++i){
         
-        ss << timeDiff(reportedTime_[0], reportedTime_[i]) << ";" << note_[i] << '\n';
+        ss << timeDiff(reportedTime_[0], reportedTime_[i]) << ";" << threadID_[i] << ";" << note_[i] << '\n';
     }
 
     return ss;
