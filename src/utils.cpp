@@ -33,6 +33,13 @@ void SystemStats::MemoryUsage::snapshot(){
     threadID_.push_back(std::this_thread::get_id());
 }
 
+void SystemStats::MemoryUsage::clear(){
+    std::lock_guard<std::mutex> guard(lock_);
+    reportedMemUsage_.clear();
+    reportedTime_.clear();
+    threadID_.clear();
+}
+
 std::stringstream SystemStats::MemoryUsage::getReport(){
     std::lock_guard<std::mutex> guard(lock_);
     std::stringstream ss;
@@ -50,6 +57,13 @@ void SystemStats::TimeIntervals::snapshot(const std::string& note){
     note_.push_back(note);
     threadID_.push_back(std::this_thread::get_id());
     reportedTime_.push_back(std::chrono::high_resolution_clock::now());
+}
+
+void SystemStats::TimeIntervals::clear(){
+    std::lock_guard<std::mutex> guard(lock_);
+    reportedTime_.clear();
+    note_.clear();
+    threadID_.clear();
 }
 
 std::stringstream SystemStats::TimeIntervals::getReport(){
@@ -72,6 +86,11 @@ std::stringstream SystemStats::getReport(){
     ss << timeIntervals_.getReport().rdbuf();
 
     return ss;
+}
+
+void SystemStats::clear(){
+    this->memoryUsage_.clear();
+    this->timeIntervals_.clear();
 }
 
 SystemStats& SystemStats::getInstance(){

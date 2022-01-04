@@ -27,6 +27,7 @@ public:
 
     public:
         void snapshot();
+        void clear();
 
         std::stringstream getReport();
     };
@@ -39,6 +40,7 @@ public:
 
     public:
         void snapshot(const std::string& note);
+        void clear();
 
         std::stringstream getReport();
     };
@@ -61,6 +63,7 @@ public:
     TimeIntervals timeIntervals_;
 
     std::stringstream getReport();
+    void clear();
 
     SystemStats(const SystemStats&) = delete;
     SystemStats& operator=(const SystemStats&) = delete;

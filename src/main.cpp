@@ -235,6 +235,7 @@ int main(int argc, char** argv){
         fileMemory << reportMem.str();
         fileTime << reportTime.str();
         std::flush(std::cout);
+        stats.clear();
     }
     
 
