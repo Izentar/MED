@@ -228,8 +228,8 @@ int main(int argc, char** argv){
         auto reportMem = stats.memoryUsage_.getReport();
         auto reportTime = stats.timeIntervals_.getReport();
 
-        std::fstream fileMemory(args.outFolder + "/" + std::to_string(i) + "_memory.txt", std::ofstream::out | std::ios_base::trunc);
-        std::fstream fileTime(args.outFolder + "/" + std::to_string(i) + "_time.txt", std::ofstream::out | std::ios_base::trunc);
+        std::fstream fileMemory(args.outFolder + "/" + std::to_string(i) + "_memory.csv", std::ofstream::out | std::ios_base::trunc);
+        std::fstream fileTime(args.outFolder + "/" + std::to_string(i) + "_time.csv", std::ofstream::out | std::ios_base::trunc);
 
         //no need for mutex. All other threads already ended
         fileMemory << reportMem.str();

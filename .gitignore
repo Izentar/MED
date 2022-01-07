@@ -1,6 +1,5 @@
 *.gz
 *.dat
 *.json
-*.txt
 *.out
-out
+.~lock*

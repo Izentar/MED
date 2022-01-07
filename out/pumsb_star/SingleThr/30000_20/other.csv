@@ -1,0 +1,6 @@
+Parsed arguments
+-f == data/pumsb_star.dat;
+-mp == 20;
+-ms == 30000;
+-o == out/pumsb_star/SingleThr/30000_20;
+-r == 4;

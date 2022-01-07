@@ -1,33 +1,23 @@
-./src/prefixspan.out -f data/mushroom.dat -ms 500 -mp 5 -o out/mushroom/SingleThr_500_5 -r 10
-./src/prefixspan.out -f data/mushroom.dat -ms 1000 -mp 10 -o out/mushroom/SingleThr_1000_10 -r 10
-./src/prefixspan.out -f data/mushroom.dat -ms 1500 -mp 10 -o out/mushroom/SingleThr_1500_10 -r 10
-./src/prefixspan.out -f data/mushroom.dat -ms 2000 -mp 10 -o out/mushroom/SingleThr_2000_10 -r 10
+./src/prefixspan.out -f data/mushroom.dat -ms 2000 -mp 5 -o out/mushroom/SingleThr/2000_5 -r 10
+./src/prefixspan.out -f data/mushroom.dat -ms 3000 -mp 10 -o out/mushroom/SingleThr/3000_10 -r 10
+./src/prefixspan.out -f data/mushroom.dat -ms 4000 -mp 10 -o out/mushroom/SingleThr/4000_10 -r 10
+./src/prefixspan.out -f data/mushroom.dat -ms 5000 -mp 10 -o out/mushroom/SingleThr/5000_10 -r 10
 
-./src/prefixspan.out -f data/mushroom.dat -ms 500 -mp 5 -o out/mushroom/MultiThr_500_5 -r 10 -t -thr 4
-./src/prefixspan.out -f data/mushroom.dat -ms 1000 -mp 10 -o out/mushroom/MultiThr_1000_10 -r 10 -t -thr 4
-./src/prefixspan.out -f data/mushroom.dat -ms 1500 -mp 10 -o out/mushroom/MultiThr_1500_10 -r 10 -t -thr 4
-./src/prefixspan.out -f data/mushroom.dat -ms 2000 -mp 10 -o out/mushroom/MultiThr_2000_10 -r 10 -t -thr 4
-
-
-
-./src/prefixspan.out -f data/pumsb_star.dat -ms 500 -mp 5 -o out/pumsb_star/SingleThr_500_5 -r 10
-./src/prefixspan.out -f data/pumsb_star.dat -ms 1000 -mp 10 -o out/pumsb_star/SingleThr_1000_10 -r 10
-./src/prefixspan.out -f data/pumsb_star.dat -ms 1500 -mp 10 -o out/pumsb_star/SingleThr_1500_10 -r 10
-./src/prefixspan.out -f data/pumsb_star.dat -ms 2000 -mp 10 -o out/pumsb_star/SingleThr_2000_10 -r 10
-
-./src/prefixspan.out -f data/pumsb_star.dat -ms 500 -mp 5 -o out/pumsb_star/MultiThr_500_5 -r 10 -t -thr 4
-./src/prefixspan.out -f data/pumsb_star.dat -ms 1000 -mp 10 -o out/pumsb_star/MultiThr_1000_10 -r 10 -t -thr 4
-./src/prefixspan.out -f data/pumsb_star.dat -ms 1500 -mp 10 -o out/pumsb_star/MultiThr_1500_10 -r 10 -t -thr 4
-./src/prefixspan.out -f data/pumsb_star.dat -ms 2000 -mp 10 -o out/pumsb_star/MultiThr_2000_10 -r 10 -t -thr 4
+./src/prefixspan.out -f data/mushroom.dat -ms 2000 -mp 5 -o out/mushroom/MultiThr/2000_5 -r 10 -t -thr 4
+./src/prefixspan.out -f data/mushroom.dat -ms 3000 -mp 10 -o out/mushroom/MultiThr/3000_10 -r 10 -t -thr 4
+./src/prefixspan.out -f data/mushroom.dat -ms 4000 -mp 10 -o out/mushroom/MultiThr/4000_10 -r 10 -t -thr 4
+./src/prefixspan.out -f data/mushroom.dat -ms 5000 -mp 10 -o out/mushroom/MultiThr/5000_10 -r 10 -t -thr 4
 
 
 
-./src/prefixspan.out -f data/accidents.dat -ms 500 -mp 5 -o out/accidents/SingleThr_500_5 -r 10
-./src/prefixspan.out -f data/accidents.dat -ms 1000 -mp 10 -o out/accidents/SingleThr_1000_10 -r 10
-./src/prefixspan.out -f data/accidents.dat -ms 1500 -mp 10 -o out/accidents/SingleThr_1500_10 -r 10
-./src/prefixspan.out -f data/accidents.dat -ms 2000 -mp 10 -o out/accidents/SingleThr_2000_10 -r 10
 
-./src/prefixspan.out -f data/accidents.dat -ms 500 -mp 5 -o out/accidents/MultiThr_500_5 -r 10 -t -thr 4
-./src/prefixspan.out -f data/accidents.dat -ms 1000 -mp 10 -o out/accidents/MultiThr_1000_10 -r 10 -t -thr 4
-./src/prefixspan.out -f data/accidents.dat -ms 1500 -mp 10 -o out/accidents/MultiThr_1500_10 -r 10 -t -thr 4
-./src/prefixspan.out -f data/accidents.dat -ms 2000 -mp 10 -o out/accidents/MultiThr_2000_10 -r 10 -t -thr 4
+./src/prefixspan.out -f data/pumsb_star.dat -ms 25000 -mp 10 -o out/pumsb_star/SingleThr/25000_10 -r 4
+./src/prefixspan.out -f data/pumsb_star.dat -ms 30000 -mp 10 -o out/pumsb_star/SingleThr/30000_10 -r 4
+./src/prefixspan.out -f data/pumsb_star.dat -ms 30000 -mp 20 -o out/pumsb_star/SingleThr/30000_20 -r 4
+
+./src/prefixspan.out -f data/pumsb_star.dat -ms 25000 -mp 10 -o out/pumsb_star/MultiThr/25000_10 -r 4 -t -thr 4
+./src/prefixspan.out -f data/pumsb_star.dat -ms 30000 -mp 10 -o out/pumsb_star/MultiThr/30000_10 -r 4 -t -thr 4
+./src/prefixspan.out -f data/pumsb_star.dat -ms 30000 -mp 20 -o out/pumsb_star/MultiThr/30000_20 -r 4 -t -thr 4
+
+./src/prefixspan.out -f data/accidents.dat -ms 200000 -mp 5 -o out/accidents/MultiThr/200000_5 -r 1 -t -thr 4
+./src/prefixspan.out -f data/accidents.dat -ms 200000 -mp 5 -o out/accidents/SingleThr/200000_5 -r 1

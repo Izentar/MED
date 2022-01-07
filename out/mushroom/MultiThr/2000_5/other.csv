@@ -1,0 +1,8 @@
+Parsed arguments
+-f == data/mushroom.dat;
+-mp == 5;
+-ms == 2000;
+-o == out/mushroom/MultiThr/2000_5;
+-r == 10;
+-t == 
+-thr == 4;

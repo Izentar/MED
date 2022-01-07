@@ -232,7 +232,7 @@ void PrefixSpan::prefixProjectImplWithLoopState(std::shared_ptr<const DataProjec
         this->prefixProjectImpl(newData, flags, recursiveLevel, prefixPattern);
         // newData->clear(); - data will be cleared automatically by shared_ptr
     }
-    prefixPattern.pop_back();
+    //prefixPattern.pop_back();
 }
 
 PrefixSpan::Flags::Flags()

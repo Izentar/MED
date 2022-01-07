@@ -1,0 +1,8 @@
+Parsed arguments
+-f == data/accidents.dat;
+-mp == 5;
+-ms == 200000;
+-o == out/accidents/MultiThr/200000_5;
+-r == 1;
+-t == 
+-thr == 4;

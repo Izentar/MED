@@ -1,0 +1,73 @@
+
+
+-f data/accidents.dat -ms 200000 -mp 5 -o out/accidents/MultiThr/200000_5 -r 1 -t -thr 4
+max memory - 181412
+time - 1154407578805 -> 0 days 00:19:14.407578805
+
+-f data/accidents.dat -ms 200000 -mp 5 -o out/accidents/SingleThr/200000_5 -r 1
+max memory - 125980
+time - 3679992160898 -> 0 days 01:01:19.992160898
+
+-------------------------------------------------------------------
+
+-f data/pumsb_star.dat -ms 25000 -mp 10 -o out/pumsb_star/MultiThr/25000_10 -r 4 -t -thr 4
+max memory - 36020
+time - 201980339892.5 -> 0 days 00:03:21.980339892
+
+-f data/pumsb_star.dat -ms 30000 -mp 10 -o out/pumsb_star/MultiThr/30000_10 -r 4 -t -thr 4
+max memory - 33984
+time - 84024249800.75 -> 0 days 00:01:24.024249800
+
+-f data/pumsb_star.dat -ms 30000 -mp 20 -o out/pumsb_star/MultiThr/30000_20 -r 4 -t -thr 4
+max memory - 34004
+time - 79954379831.0 -> 0 days 00:01:19.954379831
+
+-------------------------------------------------------------------
+
+-f data/pumsb_star.dat -ms 25000 -mp 10 -o out/pumsb_star/SingleThr/25000_10 -r 4
+max memory - 24848
+time - 588811068075.5 -> 0 days 00:09:48.811068075
+
+-f data/pumsb_star.dat -ms 30000 -mp 10 -o out/pumsb_star/SingleThr/30000_10 -r 4
+max memory - 24160
+time - 250190950441.0 -> 0 days 00:04:10.190950441
+
+-f data/pumsb_star.dat -ms 30000 -mp 20 -o out/pumsb_star/SingleThr/30000_20 -r 4
+max memory - 24108
+time - 247424634643.75 -> 0 days 00:04:07.424634643
+
+-------------------------------------------------------------------
+
+-f data/mushroom.dat -ms 2000 -mp 5 -o out/mushroom/MultiThr/2000_5 -r 10 -t -thr 4
+max memory - 7924
+time - 555339740.1 -> 0 days 00:00:00.555339740
+
+-f data/mushroom.dat -ms 3000 -mp 10 -o out/mushroom/MultiThr/3000_10 -r 10 -t -thr 4
+max memory - 7544
+time - 274789720.3 -> 0 days 00:00:00.274789720
+
+-f data/mushroom.dat -ms 4000 -mp 10 -o out/mushroom/MultiThr/4000_10 -r 10 -t -thr 4
+max memory - 7352
+time - 92072678.6 -> 0 days 00:00:00.092072678
+
+-f data/mushroom.dat -ms 5000 -mp 10 -o out/mushroom/MultiThr/5000_10 -r 10 -t -thr 4
+max memory - 7220
+time - 48988576.5 -> 0 days 00:00:00.048988576
+
+-------------------------------------------------------------------
+
+-f data/mushroom.dat -ms 2000 -mp 5 -o out/mushroom/SingleThr/2000_5 -r 10
+max memory - 5892
+time - 1923576080.1 -> 0 days 00:00:01.923576080
+
+-f data/mushroom.dat -ms 3000 -mp 10 -o out/mushroom/SingleThr/3000_10 -r 10
+max memory - 5896
+time - 930553389.7 -> 0 days 00:00:00.930553389
+
+-f data/mushroom.dat -ms 4000 -mp 10 -o out/mushroom/SingleThr/4000_10 -r 10
+max memory - 5892
+time - 270654238.5 -> 0 days 00:00:00.270654238
+
+-f data/mushroom.dat -ms 5000 -mp 10 -o out/mushroom/SingleThr/5000_10 -r 10
+max memory - 5932
+time - 113570290.7 -> 0 days 00:00:00.113570290
