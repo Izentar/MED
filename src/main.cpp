@@ -174,7 +174,7 @@ int main(int argc, char** argv){
     PrefixSpan::PrefixSpan::Flags flags;
 
     int num_threads = std::thread::hardware_concurrency();
-    std::cout << "Avaliable threads: " << num_threads << std::endl;
+    std::cout << "Avaliable hardware threads: " << num_threads << std::endl;
 
     if(argc == 1){
         help();
